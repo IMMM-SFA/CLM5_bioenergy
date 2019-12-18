@@ -33,8 +33,8 @@ We provide detailed notes on running the CLM5 compsets on PNNL's CONSTANCE clust
 
 
 ## Who do I talk to?
-yanyan.cheng@pnnl.gov
-maoyi.huang@pnnl.gov
+    yanyan.cheng at pnnl.gov
+    maoyi.huang at pnnl.gov
 
 
 
