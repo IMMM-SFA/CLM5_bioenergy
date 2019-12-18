@@ -2,7 +2,7 @@
 user namelist settings, code changes and driving scripts to set up CLM5 on Constance for bioenergy crop simulations
 
 ## Repository structure
-    ---scripts | ---user_mods
+---scripts | ---user_mods
 
 
 
@@ -12,22 +12,22 @@ We provide detailed notes on running the CLM5 compsets on PNNL's CONSTANCE clust
 
 
 ### Download script and data repository
-setenv BASE_DIR <dir-of-choice>
-cd $BASE_DIR
-git clone git@github.com:IMMM-SFA/CLM5_bioenergy.git
+    setenv BASE_DIR <dir-of-choice>
+    cd $BASE_DIR
+    git clone git@github.com:IMMM-SFA/CLM5_bioenergy.git
   
 
 ### Download CLM code, please check http://www.cesm.ucar.edu/models/cesm2.0/land for CLM5 documentation
-cd $BASE_DIR
-git clone -b release-clm5.0 git@github.com:huangmy/ctsm.git clm5.0
-setenv CLM_SRC_DIR $BASE_DIR/clm5.0
-cd $CLM_SRC_DIR
-./manage_externals/checkout_externals
+    cd $BASE_DIR
+    git clone -b release-clm5.0 git@github.com:huangmy/ctsm.git clm5.0
+    setenv CLM_SRC_DIR $BASE_DIR/clm5.0
+    cd $CLM_SRC_DIR
+    ./manage_externals/checkout_externals
 
 
 ### Configure a user_defined single point CLM5 simulation
-cd $BASE_DIR/scripts/
-bash create_1x1_Illinois_Rotation_clm5_constance.sh
+    cd $BASE_DIR/scripts/
+    bash create_1x1_Illinois_Rotation_clm5_constance.sh
 
 
 
