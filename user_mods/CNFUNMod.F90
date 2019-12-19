@@ -124,9 +124,7 @@ module CNFUNMod
   !
   ! !USES:
   use clm_varcon      , only: secspday, fun_period
-  
-  !Y. Cheng, Feb 7th, test why there is bigcost, print jday and rootC
-  use clm_time_manager, only: get_curr_date, get_curr_calday, get_days_per_year, get_rad_step_size,get_step_size,get_nstep
+  use clm_time_manager, only: get_step_size,get_nstep,get_curr_date,get_days_per_year
   !
   ! !ARGUMENTS:
   type(bounds_type)             , intent(in)    :: bounds
@@ -212,9 +210,7 @@ module CNFUNMod
        & soilbiogeochem_nitrogenstate_inst)
 
 ! !USES:
-
-   !Y. Cheng, Feb 7th, test why there is bigcost, print jday and rootC
-   use clm_time_manager, only: get_curr_date, get_curr_calday, get_days_per_year, get_rad_step_size,get_step_size,get_nstep
+   use clm_time_manager, only : get_step_size, get_curr_date, get_days_per_year 
    use clm_varpar      , only : nlevdecomp
    use clm_varcon      , only : secspday, smallValue, fun_period, tfrz, dzsoi_decomp, spval
    use clm_varctl      , only : use_nitrif_denitrif
@@ -262,8 +258,6 @@ module CNFUNMod
   !  number for nonmyc uptake of NO3.
   integer,  parameter :: icostnonmyc_nh4  = 6            ! Process
   !  number for nonmyc uptake of NH4.
-  !real(r8), parameter :: big_cost        = 1000._r8! An arbitrarily large cost
-  
   real(r8), parameter :: big_cost        = 1000000000._r8! An arbitrarily large cost
 
   !  array index when plant is fixing
@@ -273,9 +267,6 @@ module CNFUNMod
   !  array index for ECM step versus AM step
   integer, parameter :: ecm_step          = 1
   integer, parameter :: am_step           = 2
-  
-  
-  
   !  arbitrary large cost (gC/gN).
   !--------------------------------------------------------------------
   !-----------------------------------------------
@@ -510,12 +501,6 @@ module CNFUNMod
   !  fixers, 2 for non fixers. This will become redundant with the
   !   'fixer' parameter if it works. 
   
-  
-  !Y. Cheng, Feb 7th, test why there is bigcost, print jday and rootC
-  real(r8)   :: jday      ! julian day of the year
-  real(r8)   :: cur_date  ! current date
-  
-  
   !--------------------------------------------------------------------
   !---------------------------------
   associate(ivt                    => patch%itype                                          , & ! Input:   [integer  (:) ]  p
@@ -740,9 +725,6 @@ module CNFUNMod
   qflx_tran_veg_layer             = 0._r8
   rootc_dens_step                 = 0._r8
   plant_ndemand_pool              = 0._r8
-  
-  !Y. Cheng, Feb 7th, test why there is bigcost, print jday and rootC
-  jday    = get_curr_calday()
 
   call t_startf('CNFUNzeroarrays')
   do fp = 1,num_soilp        ! PFT Starts
@@ -1083,17 +1065,8 @@ stp:  do istp = ecm_step, am_step        ! TWO STEPS
                else
                  fixer=0
                endif
-               
-               !Y. Cheng, Feb 7th, test why there is bigcost, print jday and rootC
-               !print *, 'Fun check in fun_cost_fix:', j,nlevdecomp,p,crootfr(p,j)
-               
                costNit(j,icostFix)     = fun_cost_fix(fixer,a_fix(ivt(p)),b_fix(ivt(p))&
-               ,c_fix(ivt(p)) ,big_cost,crootfr(p,j),s_fix(ivt(p)),tc_soisno(c,j),jday,rootC(p))
-               
-               !Y. Cheng, Feb 8th,check rootc_den
-!                if (crootfr(p,j) > 0 .and. p == 18)  then
-!                		print *, 'fun_cost_fix rootc gt 0 for crop:', j,nlevdecomp,p,costNit(j,icostFix),crootfr(p,j)
-!                end if
+               ,c_fix(ivt(p)) ,big_cost,crootfr(p,j),s_fix(ivt(p)),tc_soisno(c,j))
             end do
             cost_fix(p,1:nlevdecomp)      = costNit(:,icostFix)
             
@@ -1111,41 +1084,24 @@ stp:  do istp = ecm_step, am_step        ! TWO STEPS
             !--------------------------------------------------------------------
             !------------
             !------Mycorrhizal Uptake Cost-----------------!
-            !Y. Cheng, Feb 7th, test why there is bigcost, print jday and rootC
             do j = 1,nlevdecomp
                rootc_dens_step            = rootc_dens(p,j) *  permyc(p,istp)
-               !print *, 'Fun check in fun_cost_active:', j,nlevdecomp,p,rootc_dens_step,rootc_dens(p,j),permyc(p,istp),crootfr(p,j)
-               
                costNit(j,icostActiveNO3)  = fun_cost_active(sminn_no3_layer_step(p,j,istp) &
-               ,big_cost,kc_active(p,istp),kn_active(p,istp) ,rootc_dens_step,crootfr(p,j),smallValue,jday,rootC(p))
+               ,big_cost,kc_active(p,istp),kn_active(p,istp) ,rootc_dens_step,crootfr(p,j),smallValue)
                costNit(j,icostActiveNH4)  = fun_cost_active(sminn_nh4_layer_step(p,j,istp) &
-               ,big_cost,kc_active(p,istp),kn_active(p,istp) ,rootc_dens_step,crootfr(p,j),smallValue,jday,rootC(p))
-               
-               !Y. Cheng, Feb 8th,check rootc_den
-!                if (rootc_dens_step > 0 .and. p == 18)  then
-!                		print *, 'fun_cost_active rootc gt 0 for crop:', j,nlevdecomp,p,costNit(j,icostActiveNO3),costNit(j,icostActiveNH4),crootfr(p,j)
-!                end if
-               
+               ,big_cost,kc_active(p,istp),kn_active(p,istp) ,rootc_dens_step,crootfr(p,j),smallValue)
             end do
             cost_active_no3(p,1:nlevdecomp)  = costNit(:,icostActiveNO3) 
             cost_active_nh4(p,1:nlevdecomp)  = costNit(:,icostActiveNH4)
             
 
             !------Non-mycorrhizal Uptake Cost-------------!
-            !Y. Cheng, Feb 7th, test why there is bigcost, print jday and rootC
             do j = 1,nlevdecomp
                rootc_dens_step             = rootc_dens(p,j)  *  permyc(p,istp)
-               !print *, 'Fun check in fun_cost_nonmyc:', j,nlevdecomp,p,rootc_dens_step,rootc_dens(p,j),permyc(p,istp),crootfr(p,j)
-               
                costNit(j,icostnonmyc_no3)   = fun_cost_nonmyc(sminn_no3_layer_step(p,j,istp) &
-               ,big_cost,kc_nonmyc(ivt(p)),kn_nonmyc(ivt(p)) ,rootc_dens_step,crootfr(p,j),smallValue,jday,rootC(p))
+               ,big_cost,kc_nonmyc(ivt(p)),kn_nonmyc(ivt(p)) ,rootc_dens_step,crootfr(p,j),smallValue)
                costNit(j,icostnonmyc_nh4)   = fun_cost_nonmyc(sminn_nh4_layer_step(p,j,istp) &
-               ,big_cost,kc_nonmyc(ivt(p)),kn_nonmyc(ivt(p)) ,rootc_dens_step,crootfr(p,j),smallValue,jday,rootC(p))
-               
-               !Y. Cheng, Feb 8th,check rootc_den
-!                if (rootc_dens_step > 0 .and. p == 18)  then
-!                		print *, 'fun_cost_nonmyc rootc gt 0 for crop:', j,nlevdecomp,p,costNit(j,icostnonmyc_no3),costNit(j,icostnonmyc_nh4),rootc_dens(p,j),permyc(p,istp),crootfr(p,j)
-!                end if
+               ,big_cost,kc_nonmyc(ivt(p)),kn_nonmyc(ivt(p)) ,rootc_dens_step,crootfr(p,j),smallValue)
             end do
             cost_nonmyc_no3(p,1:nlevdecomp)   = costNit(:,icostnonmyc_no3)
             cost_nonmyc_nh4(p,1:nlevdecomp)   = costNit(:,icostnonmyc_nh4)
@@ -1278,14 +1234,18 @@ fix_loop:   do FIX =plants_are_fixing, plants_not_fixing !loop around percentage
                      end if
                      ! C used for uptake is reduced if the cost of N is very high                
                      frac_ideal_C_use = max(0.0_r8,1.0_r8 - (total_N_resistance-fun_cn_flex_a(ivt(p)))/fun_cn_flex_b(ivt(p)) )
-                     ! then, if the plant is very much in need of N, the C used for uptake is increased accordingly.  
-                     if(delta_CN.lt.0.0)then                     
+                     ! then, if the plant is very much in need of N, the C used for uptake is increased accordingly.                  
+                     
+                     
+                     ! Y. Cheng
+                     if(delta_CN .gt.0.and. frac_ideal_C_use.lt.1.0)then           
                        frac_ideal_C_use = frac_ideal_C_use + (1.0_r8-frac_ideal_C_use)*min(1.0_r8, delta_CN/fun_cn_flex_c(ivt(p)));                       
                      end if    
                      ! If we have too much N (e.g. from free N retranslocation) then make frac_ideal_c_use even lower.    
                      ! For a CN delta of fun_cn_flex_c, then we reduce C expendiure to the minimum of 0.5. 
                      ! This seems a little intense? 
-                     if(delta_CN .gt.0.and. frac_ideal_C_use.lt.1.0)then   
+                     ! Y. Cheng
+                     if(delta_CN.lt.0.0)then
                         frac_ideal_C_use = frac_ideal_C_use + 0.5_r8*(1.0_r8*delta_CN/fun_cn_flex_c(ivt(p)))
                      endif 
                      frac_ideal_C_use = max(min(1.0_r8,frac_ideal_C_use),0.5_r8) 
@@ -1294,8 +1254,6 @@ fix_loop:   do FIX =plants_are_fixing, plants_not_fixing !loop around percentage
                      frac_ideal_C_use= 1.0_r8
                  end if
                
-               	 ! Y. Cheng
-                 !frac_ideal_C_use=max(frac_ideal_C_use,0.005) 
                  excess_carbon                 = npp_to_spend * (1.0_r8-frac_ideal_c_use)
                  if(excess_carbon*(1.0_r8+grperc(ivt(p))).gt.npp_to_spend)then !prevent negative dnpp
                       excess_carbon =  npp_to_spend/(1.0_r8+grperc(ivt(p)))
@@ -1606,7 +1564,7 @@ fix_loop:   do FIX =plants_are_fixing, plants_not_fixing !loop around percentage
   end associate
   end subroutine CNFUN
 !=========================================================================================
-  real(r8) function fun_cost_fix(fixer,a_fix,b_fix,c_fix,big_cost,crootfr,s_fix, tc_soisno,jday,rootC)
+  real(r8) function fun_cost_fix(fixer,a_fix,b_fix,c_fix,big_cost,crootfr,s_fix, tc_soisno)
 
 ! Description:
 !   Calculate the cost of fixing N by nodules.
@@ -1630,8 +1588,6 @@ fix_loop:   do FIX =plants_are_fixing, plants_not_fixing !loop around percentage
   real(r8), intent(in) :: crootfr   ! fraction of roots for carbon that are in this layer
   real(r8), intent(in) :: s_fix     ! Inverts Houlton et al. 2008 and constrains between 7.5 and 12.5
   real(r8), intent(in) :: tc_soisno ! soil temperature (degrees Celsius)
-  real(r8), intent(in) :: jday    !  julian day
-  real(r8), intent(in) :: rootC    !  julian day
 
   if (fixer == 1 .and. crootfr > 1.e-6_r8) then
      fun_cost_fix  = s_fix * (exp(a_fix + b_fix * tc_soisno * (1._r8 - 0.5_r8 * tc_soisno / c_fix)) - 2._r8)
@@ -1652,21 +1608,13 @@ fix_loop:   do FIX =plants_are_fixing, plants_not_fixing !loop around percentage
      ! can then be inverted to give a temperature limited C:N, as 1/(f/6). Which is the 
      ! same as 6/f, given here" 
      fun_cost_fix  = (-1*s_fix) * 1.0_r8 / (1.25_r8* (exp(a_fix + b_fix * tc_soisno * (1._r8 - 0.5_r8 * tc_soisno / c_fix)) ))
-     !Y. Cheng, Feb 7th, test why there is bigcost
-     !print *, 'fun_cost_fix is F:', jday,fun_cost_fix,fixer,crootfr,big_cost,s_fix,a_fix,b_fix,c_fix,tc_soisno,rootC
   else
      fun_cost_fix = big_cost
-     
-     !Y. Cheng, Feb 7th, test why there is bigcost
-!      if (crootfr <= 1.e-6_r8) then
-!      	print *, 'fun_cost_fix is T for crootfr:', jday,fun_cost_fix,fixer,crootfr,big_cost,s_fix,a_fix,b_fix,c_fix,tc_soisno,rootC
-!      end if
-
   end if    ! ends up with the fixer or non-fixer decision
   
   end function fun_cost_fix
 !=========================================================================================
-  real(r8) function fun_cost_active(sminn_layer,big_cost,kc_active,kn_active,rootc_dens,crootfr,smallValue,jday,rootC)         
+  real(r8) function fun_cost_active(sminn_layer,big_cost,kc_active,kn_active,rootc_dens,crootfr,smallValue)         
 
 ! Description:
 !    Calculate the cost of active uptake of N frm the soil.
@@ -1684,31 +1632,17 @@ fix_loop:   do FIX =plants_are_fixing, plants_not_fixing !loop around percentage
   real(r8), intent(in) :: rootc_dens    !  Root carbon density in layer (gC/m3).
   real(r8), intent(in) :: crootfr        !  Fraction of roots that are in this layer.
   real(r8), intent(in) :: smallValue    !  A small number.
-  real(r8), intent(in) :: jday    !  julian day
-  real(r8), intent(in) :: rootC    !  julian day
 
   if (rootc_dens > 1.e-6_r8.and.sminn_layer > smallValue) then
-     fun_cost_active =  kn_active/sminn_layer + kc_active/rootc_dens
-     !Y. Cheng, Feb 7th, test why there is bigcost
-     !print *, 'fun_cost_active is F:', jday,fun_cost_active,rootc_dens,crootfr,sminn_layer,smallValue,big_cost,kc_active,kn_active,rootC
+     fun_cost_active =  kn_active/sminn_layer + kc_active/rootc_dens 
   else
 !    There are very few roots in this layer. Set a high cost.
      fun_cost_active =  big_cost
-     
-     !Y. Cheng, Feb 7th, test why there is bigcost
-!      if (rootc_dens <= 1.e-6_r8) then
-!      	print *, 'fun_cost_active is T for rootc:', jday,fun_cost_active,rootc_dens,crootfr,sminn_layer,smallValue,big_cost,kc_active,kn_active,rootC
-!      else if (sminn_layer <= smallValue) then
-!      	print *, 'fun_cost_active is T for sminn:', jday,fun_cost_active,rootc_dens,crootfr,sminn_layer,smallValue,big_cost,kc_active,kn_active,rootC 
-!      else
-!      	print *, 'fun_cost_active is T for either:', jday,fun_cost_active,rootc_dens,crootfr,sminn_layer,smallValue,big_cost,kc_active,kn_active,rootC
-!      end if   
-     
   end if
  
   end function fun_cost_active
 !=========================================================================================
-  real(r8) function fun_cost_nonmyc(sminn_layer,big_cost,kc_nonmyc,kn_nonmyc,rootc_dens,crootfr,smallValue,jday,rootC)         
+  real(r8) function fun_cost_nonmyc(sminn_layer,big_cost,kc_nonmyc,kn_nonmyc,rootc_dens,crootfr,smallValue)         
 
 ! Description:
 !    Calculate the cost of nonmyc uptake of N frm the soil.
@@ -1726,27 +1660,12 @@ fix_loop:   do FIX =plants_are_fixing, plants_not_fixing !loop around percentage
   real(r8), intent(in) :: rootc_dens   !  Root carbon density in layer (gC/m3).
   real(r8), intent(in) :: crootfr        !  Fraction of roots that are in this layer.
   real(r8), intent(in) :: smallValue    !  A small number.
-  real(r8), intent(in) :: jday    !  julian day
-  real(r8), intent(in) :: rootC    !  julian day
-  
 
   if (rootc_dens > 1.e-6_r8.and.sminn_layer > smallValue) then
     fun_cost_nonmyc =  kn_nonmyc / sminn_layer + kc_nonmyc / rootc_dens 
-    !Y. Cheng, Feb 7th, test why there is bigcost
-    !print *, 'fun_cost_nonmyc is F:', fun_cost_nonmyc,rootc_dens,crootfr,sminn_layer,smallValue,big_cost,kc_nonmyc,kn_nonmyc,rootC
   else
 !   There are very few roots in this layer. Set a high cost.
     fun_cost_nonmyc = big_cost
-    
-    !Y. Cheng, Feb 7th, test why there is bigcost
-!     if (rootc_dens <= 1.e-6_r8) then
-!      	print *, 'fun_cost_nonmyc is T for rootc:', jday,fun_cost_nonmyc,rootc_dens,crootfr,sminn_layer,smallValue,big_cost,kc_nonmyc,kn_nonmyc,rootC
-!     else if (sminn_layer <= smallValue) then
-!         print *, 'fun_cost_nonmyc is T for sminn:', jday,fun_cost_nonmyc,rootc_dens,crootfr,sminn_layer,smallValue,big_cost,kc_nonmyc,kn_nonmyc,rootC
-!     else
-!      	print *, 'fun_cost_nonmyc is T for either:', jday,fun_cost_nonmyc,rootc_dens,crootfr,sminn_layer,smallValue,big_cost,kc_nonmyc,kn_nonmyc,rootC
-!     end if  
-    
   end if
 
   end function fun_cost_nonmyc
