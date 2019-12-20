@@ -19,7 +19,7 @@ We provide detailed notes on running the CLM5 compsets on PNNL's CONSTANCE clust
 
 ### Download CLM code, please check http://www.cesm.ucar.edu/models/cesm2.0/land for CLM5 documentation
     cd $BASE_DIR
-    git clone -b release-clm5.0 git@github.com:huangmy/ctsm.git clm5.0
+    git clone -b release-clm5.0 https://github.com/ESCOMP/ctsm.git clm5.0
     setenv CLM_SRC_DIR $BASE_DIR/clm5.0
     cd $CLM_SRC_DIR
     ./manage_externals/checkout_externals
