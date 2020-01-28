@@ -39,7 +39,7 @@ We provide detailed notes on running the CLM5 compsets on PNNL's CONSTANCE clust
 
 
 ## Reference
-Yanyan Cheng, Maoyi Huang, Min Chen, Kaiyu Guan, Carl Bernacchi, Bin Peng, Zeli Tan, Parameterizing perennial bioenergy crops in Version 5 of the Community Land Model based on site-level observations in the Central Midwestern United States, Journal of Advances for Modeling the Earth System, (Accepted)
+Yanyan Cheng, Maoyi Huang, Min Chen, Kaiyu Guan, Carl Bernacchi, Bin Peng, Zeli Tan, Parameterizing perennial bioenergy crops in Version 5 of the Community Land Model Based on Site‐Level Observations in the Central Midwestern United States. Journal of Advances in Modeling Earth Systems, 2(2013), 1–24. https://doi.org/10.1029/2019MS001719
 
 
 ## Acknowledgment
